@@ -6,6 +6,7 @@ import makemsg from '../../../lib/common/common.js'
 import { execSync } from 'child_process'
 import fetch from 'node-fetch'
 import { miaoPath } from '#miao.path'
+import schedule from 'node-schedule'
 
 let keys = lodash.map(Cfg.getCfgSchemaMap(), (i) => i.key)
 let app = App.init({
@@ -21,6 +22,11 @@ app.reg({
     rule: /^#喵喵(强制)?(更新图像|图像更新)$/,
     fn: updateRes,
     desc: '【#管理】更新素材'
+  },
+  updateStrategy: {
+    rule: /^#喵喵(安装|(强制)?更新)攻略资源$/,
+    fn: updateStrategy,
+    desc: '【#管理】攻略资源'
   },
   update: {
     rule: /^#喵喵(强制)?更新$/,
@@ -134,9 +140,58 @@ async function updateRes (e) {
       if (error) {
         e.reply('角色图片加量包安装失败！\nError code: ' + error.code + '\n' + error.stack + '\n 请稍后重试。')
       } else {
-        e.reply('角色图片加量包安装成功！您后续也可以通过 #喵喵更新图像 命令来更新图像')
+        e.reply('角色图片加量包安装成功！')
       }
     })
+  }
+  return true
+}
+
+async function updateStrategy(e) {
+  if (!await checkAuth(e)) return true
+  let games = [ "gs", "sr" ]
+
+  for (let game of games) {
+    let command = ""
+    let path = `${resPath}/meta-${game}/info/strategy/`
+    if (fs.existsSync(path)) {
+      await e.reply(`[喵喵角色攻略-${game}] 开始尝试更新攻略资源包，请稍后~`)
+      command = "git pull"
+      if (e.msg.includes("强制")) command = "git  checkout . && git  pull"
+
+      await new Promise((resolve) => {
+        exec(command, { cwd: path }, async function(error, stdout, stderr) {
+          if (/(Already up[ -]to[ -]date|已经是最新的)/.test(stdout)) {
+            await e.reply(`[喵喵角色攻略-${game}] 已经是最新了~`)
+            return resolve()
+          }
+          let numRet = /(\d*) files changed,/.exec(stdout)
+          if (numRet && numRet[1]) {
+            await e.reply(`[喵喵角色攻略-${game}] 报告主人，更新成功，此次改动了${numRet[1]}个文件~`)
+            return resolve()
+          }
+          if (error) {
+            await e.reply(`[喵喵角色攻略-${game}] 更新失败！\nError code: ${error.code}\n${error.stack}\n 请稍后重试。`)
+          } else {
+            await e.reply(`[喵喵角色攻略-${game}] 攻略资源更新成功！`)
+          }
+          resolve()
+        })
+      })
+    } else {
+      command = `git clone https://ww-github.qyxc.org/kvcfdd/${game}.git "${path}" --depth=1`
+      await e.reply(`[喵喵角色攻略-${game}] 开始尝试安装攻略资源包，请稍后~`)
+      await new Promise((resolve) => {
+        exec(command, async function(error, stdout, stderr) {
+          if (error) {
+            await e.reply(`[喵喵角色攻略-${game}] 攻略资源包安装失败！\nError code: ${error.code}\n${error.stack}\n 请稍后重试。`)
+          } else {
+            await e.reply(`[喵喵角色攻略-${game}] 攻略资源包安装成功！`)
+          }
+          resolve()
+        })
+      })
+    }
   }
   return true
 }
@@ -215,7 +270,7 @@ async function Miaoupdatelog (e, plugin = 'miao-plugin') {
   let line = log.length
   log = log.join('\n\n')
   if (log.length <= 0) return ''
-  let end = '更多详细信息，请前往gitee查看\nhttps://gitee.com/yoimiya-kokomi/miao-plugin'
+  let end = '更多详细信息，请前往github查看\nhttps://github.com/kvcfdd/miao-plugin'
   log = await makemsg.makeForwardMsg(this.e, [log, end], `${plugin}更新日志，共${line}条`)
   e.reply(log)
 }
@@ -239,3 +294,75 @@ async function miaoApiInfo (e) {
   }
   e.reply(data.msg)
 }
+
+async function autoUpdateStrategy() {
+  logger.mark('[喵喵自动任务] 开始检查资源更新...')
+  try {
+    if (fs.existsSync(`${resPath}/miao-res-plus/`)) {
+      logger.mark('[喵喵自动任务][图片加量包] 开始检查更新')
+      
+      const { stdout: imgStdout } = await new Promise((resolve, reject) => {
+        exec("git pull", { cwd: `${resPath}/miao-res-plus/` }, (error, stdout, stderr) => {
+          if (error) {
+            reject(error)
+            return
+          }
+          resolve({ stdout, stderr })
+        })
+      })
+
+      if (/(Already up[ -]to[ -]date|已经是最新的)/.test(imgStdout)) {
+        logger.mark('[喵喵自动任务][图片加量包] 资源已是最新')
+      } else {
+        logger.mark(`[喵喵自动任务][图片加量包] 更新成功: ${imgStdout.trim()}`)
+      }
+    } else {
+      logger.mark('[喵喵自动任务][图片加量包] 未安装图像资源包')
+    }
+  } catch (error) {
+    logger.error(`[喵喵自动任务][图片加量包] 更新失败: ${error.message || error}`)
+  }
+
+  const games = ["gs", "sr"]
+  for (let game of games) {
+    let path = `${resPath}/meta-${game}/info/strategy/`
+    
+    try {
+      if (fs.existsSync(path)) {
+        logger.mark(`[喵喵自动任务][${game}攻略资源] 开始检查更新`)
+        
+        const { stdout } = await new Promise((resolve, reject) => {
+          exec("git pull", { cwd: path }, (error, stdout, stderr) => {
+            if (error) {
+              reject(error)
+              return
+            }
+            resolve({ stdout, stderr })
+          })
+        })
+
+        if (/(Already up[ -]to[ -]date|已经是最新的)/.test(stdout)) {
+          logger.mark(`[喵喵自动任务][${game}攻略资源] 资源已是最新`)
+        } else {
+          logger.mark(`[喵喵自动任务][${game}攻略资源] 更新成功: ${stdout.trim()}`)
+        }
+      } else {
+        logger.mark(`[喵喵自动任务][${game}攻略资源] 未安装攻略资源`)
+      }
+    } catch (error) {
+      logger.error(`[喵喵自动任务][${game}攻略资源] 更新失败: ${error.message || error}`)
+    }
+  }
+}
+
+const scheduleTask = () => {
+  schedule.scheduleJob('0 30 0 * * *', async () => {
+    try {
+      await autoUpdateStrategy()
+    } catch (e) {
+      logger.error(`[喵喵自动任务] 定时任务执行失败: ${e.message || e}`)
+    }
+  })
+}
+
+scheduleTask()

@@ -43,7 +43,7 @@ export default class ProfileReq extends Base {
     let serv = this.serv
     let extra = serv.name ? `当前面板服务${serv.name}，` : ''
     const msgs = {
-      error: `UID${this.uid}更新面板失败，${extra}\n可能是面板服务维护中，请稍后重试...\n或尝试使用【${this.game === 'gs' ? '#' : '*'}米游社更新面板】`,
+      error: `请求失败`,
       empty: '请将角色放置在【游戏内】角色展柜，并打开【显示详情】，等待5分钟重新获取面板'
     }
     msg = msgs[msg] || msg
@@ -82,7 +82,7 @@ export default class ProfileReq extends Base {
       if (self._isReq) {
         this.e.reply(`开始获取uid:${uid}的数据，可能会需要一定时间~`)
       }
-    }, 2000)
+    }, 5000)
     // 发起请求
     this.log(`${logger.yellow('开始请求数据')}，面板服务：${serv.name}...`)
     const startTime = new Date() * 1
