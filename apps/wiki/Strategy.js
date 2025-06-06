@@ -44,6 +44,7 @@ const Strategy = {
         let msglist = []
         msglist.push({
           nickname: "小助手",
+          message: [ `${name}攻略` ]
         })
         for (let file of files) {
           msglist.push({
