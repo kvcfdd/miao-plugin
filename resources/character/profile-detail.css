@@ -53,17 +53,37 @@ body {
 .char-name {
   font-size: 50px;
   font-family: Number, "印品南征北战NZBZ体", NZBZ, "汉仪文黑-65W", YS, PingFangSC-Medium, "PingFang SC", sans-serif;
-  text-shadow: 0 0 3px #000, 2px 2px 4px rgba(0, 0, 0, 0.7);
   text-align: right;
+  background-image: linear-gradient(45deg, 
+  red,
+  orange,
+  yellow,
+  rgb(90, 254, 90),
+  rgb(91, 249, 225),
+  rgb(237, 63, 193),
+  violet,
+  red
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .char-lv {
   margin-bottom: 20px;
-  text-shadow: 0 0 3px #000, 2px 2px 4px rgba(0, 0, 0, 0.7);
   text-align: right;
+  background-image: linear-gradient(45deg, 
+  red, 
+  violet,
+  rgb(237, 63, 193),
+  rgb(91, 249, 225),
+  cyan
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .char-lv .cons {
   margin-left: 5px;
   vertical-align: bottom;
+  -webkit-text-fill-color: #fff;
 }
 .char-attr {
   backdrop-filter: blur(2px);
@@ -102,7 +122,7 @@ body {
   margin: 7px auto 0;
 }
 .char-attr li .weight span.gold {
-  color: #ffe699;
+  color: #ffcd35;
 }
 .char-attr li .icon {
   width: 26px;
@@ -141,13 +161,13 @@ body {
   transform-origin: right center;
 }
 .char-attr li .value2 .base {
-  color: #eee;
+  color: #fff;
 }
 .char-attr li .value2 .base.zero {
-  color: #aaaa;
+  color: #dbdbdbaa;
 }
 .char-attr li .value2 .plus {
-  color: #90e800;
+  color: #9dff00;
 }
 .i-hp {
   background-position: -16px 0;
@@ -207,7 +227,7 @@ body {
   text-align: left;
   width: 75px;
   display: inline-block;
-  color: #90e800;
+  color: #9dff00;
   font-size: 15px;
 }
 .talent-icon {
@@ -251,7 +271,7 @@ body {
 }
 .talent-icon.talent-plus strong {
   background: #2e353e;
-  color: #ffdfa0;
+  color: #fad68f;
   font-weight: bold;
   box-shadow: 0 0 1px 0 #d3bc8e, 1px 1px 2px 0 rgba(0, 0, 0, 0.5);
 }
@@ -304,6 +324,9 @@ body {
   line-height: 20px;
   padding-right: 5px;
 }
+.data-info nobr {
+  color: #2eff27
+}
 .data-info .time {
   margin-left: 5px;
 }
@@ -333,7 +356,7 @@ body {
 }
 .cont-title {
   background: rgba(0, 0, 0, 0.4);
-  color: #d3bc8e;
+  color: #ebbf66;
   padding: 10px 20px;
   text-align: left;
 }
@@ -377,14 +400,15 @@ body {
   text-align: center;
 }
 .dmg-cont .tr.thead > div {
-  color: #d3bc8e;
+  color: #eabc60;
   background: rgba(0, 0, 0, 0.4);
+  line-height: 40px;
   height: 40px;
   font-size: 15px;
 }
 .dmg-cont .tr .title,
 .dmg-cont .tr .th {
-  color: #d3bc8e;
+  color: #ffd47d;
   padding-right: 15px;
   padding-left: 5px;
   text-align: right;
@@ -427,7 +451,7 @@ body {
 .dmg-notice {
   font-size: 12px;
   text-align: right;
-  color: #f5f5f5;
+  color: #fff;
   margin-right: 15px;
 }
 /*** artis***/
@@ -491,17 +515,17 @@ body {
 }
 .mark-ACE,
 .mark-MAX {
-  color: #e85656;
+  color: #ff1919;
   font-weight: bold;
 }
 .mark-SSS,
 .mark-SS {
-  color: #ffe699;
+  color: #ffc61d;
   font-weight: bold;
 }
 .mark-S,
 .mark-A {
-  color: #d699ff;
+  color: #b546ff;
   font-weight: bold;
 }
 .arti-main {
@@ -593,7 +617,7 @@ body {
 }
 .artis ul.detail li.great span.title,
 .arti-info ul.detail li.great span.title {
-  color: #ffe699;
+  color: #ffd864;
 }
 .artis ul.detail li.great span.title i.up-num,
 .arti-info ul.detail li.great span.title i.up-num {
@@ -718,7 +742,7 @@ body {
   width: 50%;
 }
 .artis .weapon .weapon-attr div span {
-  color: #ffe699;
+  color: #ffd34f;
   font-weight: bold;
 }
 .artis .weapon .weapon-desc-cont {
@@ -878,10 +902,10 @@ body {
   padding-left: 10px;
 }
 .dmg-desc ul li {
-  color: #aaa;
+  color: #cccccc;
 }
 .dmg-desc strong {
-  color: #d3bc8e;
+  color: #ecbf63;
   display: inline;
   padding: 0 3px;
   font-weight: normal;
@@ -889,7 +913,7 @@ body {
 .arti-stat span {
   font-size: 12px;
   line-height: 20px;
-  color: #bbb;
+  color: #d9d9d9;
 }
 .game-sr .artis-weapon {
   display: none;
@@ -969,7 +993,7 @@ body {
   font-size: 14px;
 }
 .sr-weapon .weapon-title strong {
-  color: #d3bc8e;
+  color: #f7d38a;
   font-weight: normal;
 }
 .sr-weapon .weapon-attr {
@@ -986,7 +1010,7 @@ body {
   line-height: 22px;
   height: 22px;
   font-size: 12px;
-  color: #ffe699;
+  color: #ffdd76;
   display: inline-block;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.5);
@@ -1028,13 +1052,12 @@ body {
   word-break: break-all;
 }
 .weapon-desc nobr {
-  color: #ffe699;
+  color: #ffdd76;
   display: inline-block;
   border-radius: 4px;
   font-size: 12px;
   height: 16px;
   line-height: 16px;
-  background: rgba(0, 0, 0, 0.5);
   text-align: center;
   padding: 0 3px;
   margin: 0 2px;

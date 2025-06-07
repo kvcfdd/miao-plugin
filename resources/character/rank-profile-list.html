@@ -83,7 +83,7 @@
 
     <div class="char-talent elem-{{ds.elem}}">
       {{each talentMap tName key}}
-      {{set talent = ds.talent[key] || {} }}
+      {{set talent = (ds.talent && ds.talent[key]) || {} }}
       <div class="talent-item">
         <div class="talent-icon
            {{talent.level > talent.original ? `talent-plus`:``}}
@@ -91,7 +91,7 @@
             {{talent.original >= 10 && game === 'sr' ? `talent-crown-sr`:``}}">
           <div class="talent-icon-img"
                style="background-image:url({{_res_path}}{{ds.imgs[key]}})"></div>
-          <span>{{talent.level}}</span>
+          <span>{{talent.level || 0}}</span>
         </div>
       </div>
       {{/each}}

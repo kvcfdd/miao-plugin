@@ -296,11 +296,10 @@ async function miaoApiInfo (e) {
 }
 
 async function autoUpdateStrategy() {
-  logger.mark('[喵喵自动任务] 开始检查资源更新...')
+  logger.mark('[喵喵自动任务] 检查资源更新...')
   try {
     if (fs.existsSync(`${resPath}/miao-res-plus/`)) {
-      logger.mark('[喵喵自动任务][图片加量包] 开始检查更新')
-      
+      logger.mark('[图片加量包] 检查更新')
       const { stdout: imgStdout } = await new Promise((resolve, reject) => {
         exec("git pull", { cwd: `${resPath}/miao-res-plus/` }, (error, stdout, stderr) => {
           if (error) {
@@ -310,27 +309,50 @@ async function autoUpdateStrategy() {
           resolve({ stdout, stderr })
         })
       })
-
       if (/(Already up[ -]to[ -]date|已经是最新的)/.test(imgStdout)) {
-        logger.mark('[喵喵自动任务][图片加量包] 资源已是最新')
+        logger.mark('[图片加量包] 已是最新')
       } else {
-        logger.mark(`[喵喵自动任务][图片加量包] 更新成功: ${imgStdout.trim()}`)
+        logger.mark('[图片加量包] 已更新')
       }
     } else {
-      logger.mark('[喵喵自动任务][图片加量包] 未安装图像资源包')
+      logger.mark('[图片加量包] 未安装')
     }
   } catch (error) {
-    logger.error(`[喵喵自动任务][图片加量包] 更新失败: ${error.message || error}`)
+    logger.error(`[图片加量包] 更新失败: ${error.message || error}`)
+  }
+
+  try {
+    const profilePath = `${resPath}/profile`
+    const profileGitPath = `${profilePath}/.git`
+    if (fs.existsSync(profilePath) && fs.existsSync(profileGitPath)) {
+      logger.mark('[profile资源] 检查更新')
+      const { stdout: profileStdout } = await new Promise((resolve, reject) => {
+        exec("git pull", { cwd: profilePath }, (error, stdout, stderr) => {
+          if (error) {
+            reject(error)
+            return
+          }
+          resolve({ stdout, stderr })
+        })
+      })
+      if (/(Already up[ -]to[ -]date|已经是最新的)/.test(profileStdout)) {
+        logger.mark('[profile资源] 已是最新')
+      } else {
+        logger.mark('[profile资源] 已更新')
+      }
+    } else {
+      logger.mark('[profile资源] 非git资源')
+    }
+  } catch (error) {
+    logger.error(`[profile资源] 更新失败: ${error.message || error}`)
   }
 
   const games = ["gs", "sr"]
   for (let game of games) {
     let path = `${resPath}/meta-${game}/info/strategy/`
-    
     try {
       if (fs.existsSync(path)) {
-        logger.mark(`[喵喵自动任务][${game}攻略资源] 开始检查更新`)
-        
+        logger.mark(`[${game}攻略] 检查更新`)
         const { stdout } = await new Promise((resolve, reject) => {
           exec("git pull", { cwd: path }, (error, stdout, stderr) => {
             if (error) {
@@ -340,17 +362,16 @@ async function autoUpdateStrategy() {
             resolve({ stdout, stderr })
           })
         })
-
         if (/(Already up[ -]to[ -]date|已经是最新的)/.test(stdout)) {
-          logger.mark(`[喵喵自动任务][${game}攻略资源] 资源已是最新`)
+          logger.mark(`[${game}攻略] 已是最新`)
         } else {
-          logger.mark(`[喵喵自动任务][${game}攻略资源] 更新成功: ${stdout.trim()}`)
+          logger.mark(`[${game}攻略] 已更新`)
         }
       } else {
-        logger.mark(`[喵喵自动任务][${game}攻略资源] 未安装攻略资源`)
+        logger.mark(`[${game}攻略] 未安装`)
       }
     } catch (error) {
-      logger.error(`[喵喵自动任务][${game}攻略资源] 更新失败: ${error.message || error}`)
+      logger.error(`[${game}攻略] 更新失败: ${error.message || error}`)
     }
   }
 }

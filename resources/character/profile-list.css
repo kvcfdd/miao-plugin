@@ -7,9 +7,16 @@ body,
 }
 .head-box {
   margin-top: 10px;
+  color: #d0f182;
 }
 .head-box .label {
   font-size: 14px;
+}
+.head-box .label nobr {
+  color: #ff3adb;
+}
+.head-box .label span {
+  color: #ff3adb;
 }
 .char-list {
   display: flex;
@@ -113,6 +120,9 @@ body,
 }
 .cont-footer .serv {
   text-align: right;
+}
+.cont-footer .serv nobr {
+  color: #41ff30;
 }
 .cont-footer .new-tip:before {
   content: "";

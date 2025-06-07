@@ -5,13 +5,12 @@
 <link rel="stylesheet" type="text/css" href="{{_res_path}}/character/profile-list.css"/>
 {{/block}}
 
-
 {{block 'main'}}
 {{set demo = chars[0]?.abbr || "雷神" }}
 <div class="profile-cont game-{{game}}">
   <div class="head-box">
     <div class="title">#面板列表
-      <div class="label">UID:{{uid}}</div>
+      <div class="label"><nobr>UID:{{uid}}</nobr></div>
     </div>
     {{if msg}}
     <div class="label">{{msg}}</div>
@@ -60,7 +59,9 @@
       <span>{{if updateTime.profile }} 更新时间：{{updateTime.profile }} {{/if}}</span>
       {{/if}}
       <span class="serv">
-      当前更新服务：{{servName}}
+      面板服务：
+      <nobr>{{servName}}
+      </nobr>
     </span>
     </div>
   </div>
