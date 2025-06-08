@@ -47,6 +47,11 @@ app.reg({
     rule: /^#喵喵api$/,
     fn: miaoApiInfo,
     desc: '【#管理】喵喵Api'
+  },
+  updateCharRes: {
+    rule: /^#喵喵更新角色资源$/,
+    fn: updateCharRes,
+    desc: '【#管理】更新角色资源'
   }
 })
 
@@ -387,3 +392,45 @@ const scheduleTask = () => {
 }
 
 scheduleTask()
+
+async function updateCharRes(e) {
+  if (!await checkAuth(e)) return true
+  e.reply('开始更新角色资源，请耐心等待...')
+  const { spawn } = await import('child_process')
+  const scriptPath = `${resPath}/meta-gs/character/hakush_gs_character.py`
+  let logs = []
+  try {
+    const isWin = process.platform === 'win32'
+    const pyArgs = isWin ? ['-Xutf8', scriptPath] : [scriptPath]
+    const env = { ...process.env }
+    if (!isWin) env.PYTHONIOENCODING = 'utf-8'
+    const proc = spawn('python', pyArgs, { cwd: `${resPath}meta-gs/character`, env })
+    proc.stdout.on('data', (data) => {
+      logs.push(data.toString('utf8'))
+    })
+    proc.stderr.on('data', (data) => {
+      logs.push(data.toString('utf8'))
+    })
+    await new Promise((resolve) => {
+      proc.on('close', () => resolve())
+    })
+    let allLog = logs.join('\n')
+    let successArr = allLog.match(/成功：[^\n]+/g) || []
+    let failArr = allLog.match(/失败：[^\n]+/g) || []
+    let msg = ''
+    if (failArr.length > 0) {
+      msg = '部分角色处理失败：\n' + failArr.join('\n')
+      if (successArr.length > 0) {
+        msg += '\n\n成功：\n' + successArr.join('\n')
+      }
+    } else if (successArr.length > 0) {
+      msg = '全部角色处理成功：\n' + successArr.join('\n')
+    } else {
+      msg = '处理完成\n' + allLog
+    }
+    await e.reply(msg)
+  } catch (err) {
+    await e.reply('失败：' + (err.message || err))
+  }
+  return true
+}
