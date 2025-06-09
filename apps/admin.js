@@ -388,7 +388,8 @@ async function updateCharRes(e) {
     const pyArgs = isWin ? ['-Xutf8', scriptPath] : [scriptPath]
     const env = { ...process.env }
     if (!isWin) env.PYTHONIOENCODING = 'utf-8'
-    const proc = spawn('python', pyArgs, { cwd: `${resPath}meta-gs/character`, env })
+    const pyCmd = isWin ? 'python' : 'python3'
+    const proc = spawn(pyCmd, pyArgs, { cwd: `${resPath}/meta-gs/character`, env })
     proc.stdout.on('data', (data) => {
       logs.push(data.toString('utf8'))
     })
