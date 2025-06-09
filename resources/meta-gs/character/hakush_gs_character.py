@@ -11,7 +11,7 @@ except ImportError:
     import subprocess
     import sys
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple", "requests"])
         import requests
         print("[INFO] requests安装成功。")
     except Exception as e:
@@ -239,7 +239,7 @@ def download_extra_imgs(src, out):
             print("[INFO] Pillow库未安装，尝试自动安装...")
             import subprocess
             try:
-                subprocess.check_call([sys.executable, "-m", "pip", "install", "Pillow"])
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple", "Pillow"])
                 from PIL import Image
                 print("[INFO] Pillow安装成功。")
             except Exception as e:

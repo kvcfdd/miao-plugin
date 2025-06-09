@@ -1,12 +1,12 @@
 import fs from 'node:fs'
 import lodash from 'lodash'
-import { exec } from 'child_process'
+import { exec, execSync } from 'child_process'
 import { Cfg, Common, Data, Version, App } from '#miao'
 import makemsg from '../../../lib/common/common.js'
-import { execSync } from 'child_process'
 import fetch from 'node-fetch'
 import { miaoPath } from '#miao.path'
 import schedule from 'node-schedule'
+import { Restart } from "../../other/restart.js"
 
 let keys = lodash.map(Cfg.getCfgSchemaMap(), (i) => i.key)
 let app = App.init({
@@ -52,6 +52,11 @@ app.reg({
     rule: /^#喵喵更新角色资源$/,
     fn: updateCharRes,
     desc: '【#管理】更新角色资源'
+  },
+  resetCharFolder: {
+    rule: /^#喵喵重置角色资源$/,
+    fn: resetCharFolder,
+    desc: '【#管理】重置角色资源（删除并强制更新）'
   }
 })
 
@@ -215,7 +220,7 @@ async function updateMiaoPlugin (e) {
   } else {
     e.reply('正在执行更新操作，请稍等')
   }
-  exec(command, { cwd: miaoPath }, function (error, stdout, stderr) {
+  exec(command, { cwd: miaoPath }, function (error, stdout) {
     if (/(Already up[ -]to[ -]date|已经是最新的)/.test(stdout)) {
       e.reply('目前已经是最新版喵喵了~')
       return true
@@ -224,29 +229,8 @@ async function updateMiaoPlugin (e) {
       e.reply('喵喵更新失败！\nError code: ' + error.code + '\n' + error.stack + '\n 请稍后重试。')
       return true
     }
-    e.reply('喵喵更新成功，正在尝试重新启动Yunzai以应用更新...')
-    timer && clearTimeout(timer)
-    Data.setCacheJSON('miao:restart-msg', {
-      msg: '重启成功，新版喵喵已经生效',
-      qq: e.user_id
-    }, 30)
-    timer = setTimeout(function () {
-      let command = 'npm run start'
-      if (process.argv[1].includes('pm2')) {
-        command = 'npm run restart'
-      }
-      exec(command, function (error, stdout, stderr) {
-        if (error) {
-          e.reply('自动重启失败，请手动重启以应用新版喵喵。\nError code: ' + error.code + '\n' + error.stack + '\n')
-          Bot.logger.error(`重启失败\n${error.stack}`)
-          return true
-        } else if (stdout) {
-          Bot.logger.mark('重启成功，运行已转为后台，查看日志请用命令：npm run log')
-          Bot.logger.mark('停止后台运行命令：npm stop')
-          process.exit()
-        }
-      })
-    }, 1000)
+    e.reply('喵喵更新成功~')
+    return true
   })
   return true
 }
@@ -429,8 +413,36 @@ async function updateCharRes(e) {
       msg = '处理完成\n' + allLog
     }
     await e.reply(msg)
+    await e.reply('正在重启以应用新数据...')
+    try {
+      await new Restart(this.e).restart()
+    } catch {
+      logger.error('重启失败')
+    }
   } catch (err) {
     await e.reply('失败：' + (err.message || err))
   }
+  return true
+}
+
+async function resetCharFolder(e) {
+  if (!await checkAuth(e)) return true
+  const targetPath = `${resPath}/meta-gs/character`
+    if (fs.existsSync(targetPath)) {
+      fs.rmSync(targetPath, { recursive: true, force: true })
+    const command = 'git checkout . && git pull'
+    exec(command, { cwd: miaoPath }, function (error, stdout) {
+      if (/(Already up[ -]to[ -]date|已经是最新的)/.test(stdout)) {
+        e.reply('重置完成，重启生效')
+        return true
+      }
+      if (error) {
+        e.reply('重置失败')
+        return true
+      }
+      e.reply('重置完成，重启生效')
+      return true
+    })
+   }
   return true
 }
