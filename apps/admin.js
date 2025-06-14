@@ -199,30 +199,93 @@ async function updateStrategy(e) {
 let timer
 
 async function updateMiaoPlugin (e) {
-  if (!await checkAuth(e)) {
-    return true
-  }
-  let isForce = e.msg.includes('强制')
-  let command = 'git  pull'
-  if (isForce) {
-    command = 'git  checkout . && git  pull'
-    e.reply('正在执行强制更新操作，请稍等')
-  } else {
-    e.reply('正在执行更新操作，请稍等')
-  }
-  exec(command, { cwd: miaoPath }, function (error, stdout) {
-    if (/(Already up[ -]to[ -]date|已经是最新的)/.test(stdout)) {
-      e.reply('目前已经是最新版喵喵了~')
+    if (!await checkAuth(e)) {
       return true
     }
-    if (error) {
-      e.reply('喵喵更新失败！\nError code: ' + error.code + '\n' + error.stack + '\n 请稍后重试。')
-      return true
+    const pluginDir = path.resolve(process.cwd(), 'plugins/miao-plugin')
+    let success = false
+    let result = ''
+    let conflictFiles = []
+    let overwriteFiles = []
+    let untrackedFiles = []
+    // 第一次尝试pull
+    try {
+      result = await execSync('git pull', { cwd: pluginDir, encoding: 'utf-8', stdio: 'pipe' })
+      success = true
+    } catch (error) {
+      result = (error.stdout?.toString() || '') + (error.stderr?.toString() || '')
     }
-    e.reply('喵喵更新成功~')
-    return true
-  })
-  return true
+    // 检查是否需要自动删除
+    if (!success) {
+      // 检查CONFLICT
+      if (result && result.includes('CONFLICT')) {
+        const lines = result.split('\n')
+        for (const line of lines) {
+          const match = line.match(/CONFLICT \([^)]+\): Merge conflict in (.+)/)
+          if (match) {
+            conflictFiles.push(match[1])
+          }
+        }
+      }
+      // 检查“would be overwritten by merge”
+      if (/would be overwritten by merge:/i.test(result)) {
+        const lines = result.split('\n')
+        let found = false
+        for (const line of lines) {
+          if (/would be overwritten by merge:/i.test(line)) {
+            found = true
+            continue
+          }
+          if (found) {
+            if (line.trim() === '' || line.startsWith('error:')) break
+            overwriteFiles.push(line.trim())
+          }
+        }
+      }
+      // 检查“untracked working tree files would be overwritten by merge”
+      if (/The following untracked working tree files would be overwritten by merge:/i.test(result)) {
+        const lines = result.split('\n')
+        let found = false
+        for (const line of lines) {
+          if (/untracked working tree files would be overwritten by merge:/i.test(line)) {
+            found = true
+            continue
+          }
+          if (found) {
+            if (line.trim() === '' || line.startsWith('Please')) break
+            untrackedFiles.push(line.trim())
+          }
+        }
+      }
+      // 合并所有需要删除的文件
+      const allToDelete = [
+        ...conflictFiles,
+        ...overwriteFiles,
+        ...untrackedFiles
+      ]
+      // 自动删除
+      for (const relPath of allToDelete) {
+        const absPath = path.join(pluginDir, relPath)
+        try {
+          if (fs.existsSync(absPath)) {
+            const stat = fs.statSync(absPath)
+            if (stat.isDirectory()) {
+              fs.rmSync(absPath, { recursive: true, force: true })
+            } else {
+              fs.unlinkSync(absPath)
+            }
+          }
+        } catch (e) {}
+      }
+      // 再次pull
+      try {
+        await execSync('git pull', { cwd: pluginDir, encoding: 'utf-8', stdio: 'pipe' })
+        success = true
+      } catch (error) {
+        success = false
+      }
+    }
+    await this.reply(success ? 'miao-plugin更新成功' : 'miao-plugin更新失败')
 }
 
 async function Miaoupdatelog (e, plugin = 'miao-plugin') {
