@@ -29,7 +29,7 @@ app.reg({
     desc: '【#管理】攻略资源'
   },
   update: {
-    rule: /^#喵喵(强制)?更新$/,
+    rule: /^#喵喵更新$/,
     fn: updateMiaoPlugin,
     desc: '【#管理】喵喵更新'
   },
