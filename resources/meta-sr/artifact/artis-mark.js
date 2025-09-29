@@ -3,6 +3,7 @@
  * 如character/${name}/artis.js下有角色自定义规则优先使用自定义
  */
 export const usefulAttr = {
+  长夜月: { hp: 100, atk: 0, def: 0, speed: 100, cpct: 100, cdmg: 100, stance: 0, heal: 0, recharge: 100, effPct: 0, effDef: 0, dmg: 100 },
   海瑟音: { hp: 0, atk: 100, def: 0, speed: 100, cpct: 0, cdmg: 0, stance: 0, heal: 0, recharge: 0, effPct: 100, effDef: 0, dmg: 100 },
   刻律德菈: { hp: 0, atk: 100, def: 0, speed: 100, cpct: 0, cdmg: 100, stance: 0, heal: 0, recharge: 100, effPct: 0, effDef: 0, dmg: 100 },
   白厄: { hp: 0, atk: 75, def: 0, speed: 0, cpct: 100, cdmg: 100, stance: 0, heal: 0, recharge: 0, effPct: 0, effDef: 0, dmg: 100 },
